@@ -24,15 +24,28 @@ class Order:
         return self.price / 100 * self.commission_percent
 
 
-order1 = Order(1000, 2.5, 10)
+orders = [
+    Order(1000, 2.5, 10),
+    Order(950, 3, 10),
+    Order(1500, 4, 15),
+    Order(700, 2, 0),
+]
 
-print(order1.price)
-print(order1.hours)
-print(order1.commission_percent)
-print(order1.calculate_commission())
-print(order1.calculate_profit())
 
-order2 = Order(950, 3, 10)
+def calculate_statistics(orders):
+    total_profit = 0
+    total_hours = 0
+    for order in orders:
+        profit, _ = order.calculate_profit()
+        total_profit += profit
+        total_hours += order.hours
 
-print(order2.calculate_commission())
-print(order2.calculate_profit())
+    real_profit_per_hour = total_profit / total_hours
+    return total_profit, total_hours, real_profit_per_hour
+
+statistics = calculate_statistics(orders)
+print(statistics)
+
+print(f"Общая прибыль: {statistics[0]:.2f} ₽")
+print(f"Отработано: {statistics[1]:.2f} ч")
+print(f"Прибыль/час: {statistics[2]:.2f} ₽")
