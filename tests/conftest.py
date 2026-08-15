@@ -11,3 +11,8 @@ def orders():
         Order(1500, 4, 15),
         Order(700, 2, 0),
     ]
+
+
+@pytest.fixture
+def order():
+    return Order(1000, 2.5, 10)

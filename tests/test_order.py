@@ -57,3 +57,5 @@ def test_calculate_profit(price, hours, commission_percent, expected_profit, exp
     assert profit_for_hour == pytest.approx(expected_profit_per_hour)
 
 
+def test_order_price(order):
+    assert order.price == 1000
