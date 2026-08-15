@@ -1,16 +1,7 @@
-from models.order import Order
-from services.statistics import calculate_statistics
 import pytest
 
-
-@pytest.fixture
-def orders():
-    return [
-        Order(1000, 2.5, 10),
-        Order(950, 3, 10),
-        Order(1500, 4, 15),
-        Order(700, 2, 0),
-    ]
+from services.statistics import calculate_statistics
+import pytest
 
 
 def test_calculate_statistics(orders):
