@@ -1,4 +1,10 @@
-def calculate_statistics(orders):
+from models.order import Order
+
+
+def calculate_statistics(orders: list[Order]) -> tuple[float, float, float]:
+    if not orders:
+        raise ValueError("Список заказов не должен быть пустым")
+
     total_profit = 0
     total_hours = 0
 

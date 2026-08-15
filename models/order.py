@@ -13,12 +13,12 @@ class Order:
         self.hours = hours
         self.commission_percent = commission_percent
 
-    def calculate_profit(self):
+    def calculate_profit(self) -> tuple[float, float]:
         commission = self.calculate_commission()
         price_non_commission = self.price - commission
         profit_for_hour = price_non_commission / self.hours
 
         return price_non_commission, profit_for_hour
 
-    def calculate_commission(self):
+    def calculate_commission(self) -> float:
         return self.price / 100 * self.commission_percent
