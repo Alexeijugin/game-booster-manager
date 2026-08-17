@@ -1,5 +1,3 @@
-import pytest
-
 from services.statistics import calculate_statistics
 import pytest
 

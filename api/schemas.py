@@ -1,0 +1,7 @@
+from pydantic import BaseModel, Field
+
+
+class CreateOrderRequest(BaseModel):
+    price: float = Field(gt=0)
+    hours: float = Field(gt=0)
+    commission_percent: float = Field(ge=0, le=100)

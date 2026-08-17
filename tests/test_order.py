@@ -1,5 +1,6 @@
 import pytest
 
+from unittest.mock import Mock, patch
 from models.order import Order
 
 
@@ -55,6 +56,18 @@ def test_calculate_profit(price, hours, commission_percent, expected_profit, exp
 
     assert profit == expected_profit
     assert profit_for_hour == pytest.approx(expected_profit_per_hour)
+
+
+def test_calculate_profit_with_patch():
+    order = Order(1000, 2.5, 10)
+
+    with patch.object(order, "calculate_commission", return_value=100) as mock_commission:
+        profit, profit_per_hour = order.calculate_profit()
+
+    mock_commission.assert_called_once_with()
+
+    assert profit == 900
+    assert profit_per_hour == 360
 
 
 def test_order_price(order):
