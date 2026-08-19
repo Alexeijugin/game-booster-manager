@@ -38,16 +38,21 @@ def test_create_order_invalid_hours(client):
 
     assert response.status_code == 422
 
+    error = response.json()["detail"][0]
+
+    assert error["type"] == "greater_than"
+    assert error["loc"] == ["body", "hours"]
+
 
 @pytest.mark.parametrize(
-    "price, hours, commission_percent",
+    "price, hours, commission_percent, expected_field, expected_type",
     [
-        (1000, 0, 10),
-        (-100, 1, 10),
-        (100, 1, -10)
+        (1000, 0, 10, "hours", "greater_than"),
+        (-100, 1, 10, "price", "greater_than"),
+        (100, 1, -10, "commission_percent", "greater_than_equal")
     ],
 )
-def test_create_order_invalids(client, price, hours, commission_percent):
+def test_create_order_invalids(client, price, hours, commission_percent, expected_field, expected_type):
     response = client.post(
         "/orders",
         json={
@@ -58,6 +63,11 @@ def test_create_order_invalids(client, price, hours, commission_percent):
     )
 
     assert response.status_code == 422
+
+    error = response.json()["detail"][0]
+
+    assert error["loc"] == ["body", expected_field]
+    assert error["type"] == expected_type
 
 
 @pytest.mark.parametrize(
@@ -81,24 +91,34 @@ def test_create_order_missing_required_field(client, missing_field):
 
     assert response.status_code == 422
 
+    error = response.json()["detail"][0]
+
+    assert error["type"] == "missing"
+    assert error["loc"] == ["body", missing_field]
+
 
 @pytest.mark.parametrize(
-    "field, value",
+    "invalid_field, invalid_value",
     [
         ("price", "abc"),
         ("hours", "abc"),
         ("commission_percent", "abc"),
     ],
 )
-def test_create_order_invalid_type(client, field, value):
+def test_create_order_invalid_type(client, invalid_field, invalid_value):
     data = {
         "price": 1000,
         "hours": 2.5,
         "commission_percent": 10,
     }
 
-    data[field] = value
+    data[invalid_field] = invalid_value
 
     response = client.post("/orders", json=data)
 
     assert response.status_code == 422
+
+    error = response.json()["detail"][0]
+
+    assert error["type"] == "float_parsing"
+    assert error["loc"] == ["body", invalid_field]
