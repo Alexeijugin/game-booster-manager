@@ -11,6 +11,8 @@
 
 .idea/
 
+.env
+
 # AWS User-specific
 .idea/**/aws.xml
 

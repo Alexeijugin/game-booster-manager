@@ -2,7 +2,7 @@ import httpx
 import pytest
 
 from models.order import Order
-
+from database import get_connection
 
 @pytest.fixture
 def orders():
@@ -23,3 +23,13 @@ def order():
 def client():
     with httpx.Client(base_url="http://127.0.0.1:8000") as client:
         yield client
+
+
+@pytest.fixture
+def db_connection():
+    connection = get_connection()
+
+    yield connection
+
+    connection.rollback()
+    connection.close()
