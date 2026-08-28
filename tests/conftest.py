@@ -33,3 +33,18 @@ def db_connection():
 
     connection.rollback()
     connection.close()
+
+@pytest.fixture
+def cleanup_order(db_connection):
+    created_order_ids = []
+
+    yield created_order_ids
+
+    with db_connection.cursor() as cursor:
+        for order_id in created_order_ids:
+            cursor.execute(
+                "DELETE FROM orders WHERE id = %s",
+                (order_id,),
+            )
+
+    db_connection.commit()

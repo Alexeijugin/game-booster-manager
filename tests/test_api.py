@@ -1,4 +1,3 @@
-import httpx
 import pytest
 
 
@@ -9,21 +8,42 @@ def test_health_check(client):
     assert response.json() == {"status": "ok"}
 
 
-def test_create_order(client):
+def test_create_order(client, db_connection, cleanup_order):
     response = client.post(
         "/orders",
         json={
             "price": 1000,
             "hours": 2.5,
             "commission_percent": 10,
-        }
+            "booster_id": 1,
+        },
     )
 
+    data = response.json()
+    order_id = data["id"]
+
+    cleanup_order.append(order_id)
+
     assert response.status_code == 200
-    assert response.json() == {
-        "profit": 900,
-        "profit_per_hour": 360,
-    }
+    assert data["profit"] == 900
+    assert data["profit_per_hour"] == 360
+    assert isinstance(data["id"], int)
+
+    with db_connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT * FROM orders WHERE id = %s",
+            (order_id,),
+        )
+
+        order = cursor.fetchone()
+
+    assert order == (
+        order_id,
+        1000,
+        2.5,
+        10,
+        1,
+    )
 
 
 def test_create_order_invalid_hours(client):
@@ -33,6 +53,7 @@ def test_create_order_invalid_hours(client):
             "price": 1000,
             "hours": 0,
             "commission_percent": 10,
+            "booster_id": 1,
         },
     )
 
@@ -49,17 +70,25 @@ def test_create_order_invalid_hours(client):
     [
         (1000, 0, 10, "hours", "greater_than"),
         (-100, 1, 10, "price", "greater_than"),
-        (100, 1, -10, "commission_percent", "greater_than_equal")
+        (100, 1, -10, "commission_percent", "greater_than_equal"),
     ],
 )
-def test_create_order_invalids(client, price, hours, commission_percent, expected_field, expected_type):
+def test_create_order_invalids(
+        client,
+        price,
+        hours,
+        commission_percent,
+        expected_field,
+        expected_type,
+):
     response = client.post(
         "/orders",
         json={
             "price": price,
             "hours": hours,
-            "commission_percent": commission_percent
-        }
+            "commission_percent": commission_percent,
+            "booster_id": 1,
+        },
     )
 
     assert response.status_code == 422
@@ -76,6 +105,7 @@ def test_create_order_invalids(client, price, hours, commission_percent, expecte
         "price",
         "hours",
         "commission_percent",
+        "booster_id",
     ],
 )
 def test_create_order_missing_required_field(client, missing_field):
@@ -83,6 +113,7 @@ def test_create_order_missing_required_field(client, missing_field):
         "price": 1000,
         "hours": 2.5,
         "commission_percent": 10,
+        "booster_id": 1,
     }
 
     data.pop(missing_field)
@@ -110,6 +141,7 @@ def test_create_order_invalid_type(client, invalid_field, invalid_value):
         "price": 1000,
         "hours": 2.5,
         "commission_percent": 10,
+        "booster_id": 1,
     }
 
     data[invalid_field] = invalid_value
