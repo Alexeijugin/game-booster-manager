@@ -1,8 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 from api.schemas import CreateOrderRequest
 from models.order import Order
-from services.order_repository import create_order
+from services.order_repository import create_order, get_order, delete_order
 
 app = FastAPI()
 
@@ -34,3 +34,28 @@ def create_order_endpoint(order_data: CreateOrderRequest):
         "profit": profit,
         "profit_per_hour": profit_per_hour,
     }
+
+
+@app.get("/orders/{order_id}")
+def get_order_endpoint(order_id: int):
+    order = get_order(order_id)
+
+    if order is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    return {
+        "id": order[0],
+        "price": float(order[1]),
+        "hours": float(order[2]),
+        "commission_percent": float(order[3]),
+        "booster_id": order[4],
+    }
+
+
+@app.delete("/orders/{order_id}", status_code=204)
+def delete_order_endpoint(order_id: int):
+    deleted = delete_order(order_id)
+
+    if deleted == 0:
+        raise HTTPException(status_code=404, detail="Order not found")
+

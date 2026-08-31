@@ -154,3 +154,63 @@ def test_create_order_invalid_type(client, invalid_field, invalid_value):
 
     assert error["type"] == "float_parsing"
     assert error["loc"] == ["body", invalid_field]
+
+
+def test_get_order(client):
+    response = client.get("/orders/2")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["id"] == 2
+    assert data["price"] == 950
+    assert data["hours"] == 3
+    assert data["commission_percent"] == 10
+    assert data["booster_id"] == 1
+
+
+def test_get_order_not_found(client):
+    response = client.get("/orders/999")
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "detail": "Order not found"
+    }
+
+
+def test_delete_order(client):
+    create_response = client.post(
+        "/orders",
+        json={
+            "price": 1000,
+            "hours": 2.5,
+            "commission_percent": 10,
+            "booster_id": 1,
+        },
+    )
+
+    assert create_response.status_code == 200
+
+    order_id = create_response.json()["id"]
+
+    delete_response = client.delete(f"/orders/{order_id}")
+
+    assert delete_response.status_code == 204
+
+    get_response = client.get(f"/orders/{order_id}")
+
+    assert get_response.status_code == 404
+
+
+
+
+
+def test_delete_order_not_found(client):
+    response = client.delete("/orders/999")
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "detail": "Order not found"
+    }
+

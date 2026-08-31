@@ -38,5 +38,21 @@ def create_order(price, hours, commission_percent, booster_id):
     finally:
         connection.close()
 
-order = get_order(7)
-print(order)
+
+def delete_order(order_id):
+    connection = get_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "DELETE FROM orders WHERE id = %s",
+                (order_id,),
+            )
+
+            deleted = cursor.rowcount
+
+        connection.commit()
+
+        return deleted
+
+    finally:
+        connection.close()
