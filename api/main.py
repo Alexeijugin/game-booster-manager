@@ -1,8 +1,10 @@
 from fastapi import FastAPI, HTTPException
+from typing import Optional
+from fastapi import Query
 
 from api.schemas import CreateOrderRequest, OrderResponse
 from models.order import Order
-from services.order_repository import create_order, get_order, delete_order, update_order
+from services.order_repository import create_order, get_order, delete_order, update_order, get_orders
 
 app = FastAPI()
 
@@ -50,6 +52,23 @@ def get_order_endpoint(order_id: int):
         "commission_percent": float(order[3]),
         "booster_id": order[4],
     }
+
+@app.get("/orders")
+def get_orders_endpoint(
+    booster_id: Optional[int] = Query(default=None),
+):
+    orders = get_orders(booster_id)
+
+    return [
+        {
+            "id": order[0],
+            "price": float(order[1]),
+            "hours": float(order[2]),
+            "commission_percent": float(order[3]),
+            "booster_id": order[4],
+        }
+        for order in orders
+    ]
 
 
 @app.delete("/orders/{order_id}", status_code=204)

@@ -15,6 +15,29 @@ def get_order(order_id):
     finally:
         connection.close()
 
+def get_orders(booster_id=None):
+    connection = get_connection()
+
+    with connection.cursor() as cursor:
+        if booster_id:
+            cursor.execute(
+                """
+                SELECT *
+                FROM orders
+                WHERE booster_id = %s
+                """,
+                (booster_id,),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT *
+                FROM orders
+                """
+            )
+
+        return cursor.fetchall()
+
 
 def create_order(price, hours, commission_percent, booster_id):
     connection = get_connection()

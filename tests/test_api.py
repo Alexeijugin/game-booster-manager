@@ -1,5 +1,7 @@
 import pytest
 
+from api.schemas import OrderResponse
+
 
 def test_health_check(client):
     response = client.get("/health")
@@ -169,6 +171,23 @@ def test_get_order(client):
     assert data["commission_percent"] == 10
     assert data["booster_id"] == 1
 
+def test_get_orders_by_booster(client):
+    response = client.get(
+        "/orders",
+        params={
+            "booster_id": 1
+        }
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert len(data) > 0
+
+    for order in data:
+        assert order["booster_id"] == 1
+
 
 def test_get_order_not_found(client):
     response = client.get("/orders/999")
@@ -276,3 +295,37 @@ def test_update_order_not_found(client):
     assert response.json() == {
         "detail": "Order not found"
     }
+
+
+def test_get_order_response_schema(client):
+    response = client.get("/orders/2")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert "id" in data
+    assert "price" in data
+    assert "hours" in data
+    assert "commission_percent" in data
+    assert "booster_id" in data
+
+    assert isinstance(data["id"], int)
+    assert isinstance(data["price"], float)
+    assert isinstance(data["hours"], float)
+    assert isinstance(data["commission_percent"], float)
+    assert isinstance(data["booster_id"], int)
+
+
+def test_get_order_response_model(client):
+    response = client.get("/orders/2")
+
+    assert response.status_code == 200
+
+    order = OrderResponse(**response.json())
+
+    assert order.id == 2
+    assert order.price == 950
+    assert order.hours == 3
+    assert order.commission_percent == 10
+    assert order.booster_id == 1
