@@ -329,3 +329,21 @@ def test_get_order_response_model(client):
     assert order.hours == 3
     assert order.commission_percent == 10
     assert order.booster_id == 1
+
+def test_get_order_content_type(client):
+    response = client.get("/orders/2")
+
+    assert response.headers["content-type"] == "application/json"
+
+def test_get_orders_invalid_booster_id(client):
+    response = client.get(
+        "/orders",
+        params={"booster_id": "abc"},
+    )
+
+    assert response.status_code == 422
+
+    error = response.json()["detail"][0]
+
+    assert error["type"] == "int_parsing"
+    assert error["loc"] == ["query", "booster_id"]
