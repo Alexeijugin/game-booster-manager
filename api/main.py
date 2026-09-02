@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 
-from api.schemas import CreateOrderRequest
+from api.schemas import CreateOrderRequest, OrderResponse
 from models.order import Order
 from services.order_repository import create_order, get_order, delete_order, update_order
 
@@ -36,7 +36,7 @@ def create_order_endpoint(order_data: CreateOrderRequest):
     }
 
 
-@app.get("/orders/{order_id}")
+@app.get("/orders/{order_id}", response_model=OrderResponse)
 def get_order_endpoint(order_id: int):
     order = get_order(order_id)
 
@@ -59,7 +59,7 @@ def delete_order_endpoint(order_id: int):
     if deleted == 0:
         raise HTTPException(status_code=404, detail="Order not found")
 
-@app.put("/orders/{order_id}")
+@app.put("/orders/{order_id}", response_model=OrderResponse)
 def update_order_endpoint(
     order_id: int,
     order_data: CreateOrderRequest,
