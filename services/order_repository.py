@@ -56,3 +56,29 @@ def delete_order(order_id):
 
     finally:
         connection.close()
+
+
+def update_order(order_id, price, hours, commission_percent, booster_id):
+    connection = get_connection()
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                UPDATE orders
+                SET price = %s,
+                    hours = %s,
+                    commission_percent = %s,
+                    booster_id = %s
+                WHERE id = %s
+                """,
+                (price, hours, commission_percent, booster_id, order_id),
+            )
+
+            updated = cursor.rowcount
+
+        connection.commit()
+
+        return updated
+    finally:
+        connection.close()

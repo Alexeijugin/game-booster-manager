@@ -214,3 +214,65 @@ def test_delete_order_not_found(client):
         "detail": "Order not found"
     }
 
+def test_update_order(client):
+    create_response = client.post(
+        "/orders",
+        json={
+            "price": 1000,
+            "hours": 2.5,
+            "commission_percent": 10,
+            "booster_id": 1,
+        },
+    )
+
+    assert create_response.status_code == 200
+
+    order_id = create_response.json()["id"]
+
+    update_response = client.put(
+        f"/orders/{order_id}",
+        json={
+            "price": 1500,
+            "hours": 4,
+            "commission_percent": 15,
+            "booster_id": 2,
+        },
+    )
+
+    assert update_response.status_code == 200
+    assert update_response.json() == {
+        "id": order_id,
+        "price": 1500,
+        "hours": 4,
+        "commission_percent": 15,
+        "booster_id": 2,
+    }
+
+    get_response = client.get(f"/orders/{order_id}")
+
+    assert get_response.status_code == 200
+    assert get_response.json() == {
+        "id": order_id,
+        "price": 1500,
+        "hours": 4,
+        "commission_percent": 15,
+        "booster_id": 2,
+    }
+
+    client.delete(f"/orders/{order_id}")
+
+def test_update_order_not_found(client):
+    response = client.put(
+        "/orders/999",
+        json={
+            "price": 1500,
+            "hours": 4,
+            "commission_percent": 15,
+            "booster_id": 2,
+        },
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "detail": "Order not found"
+    }

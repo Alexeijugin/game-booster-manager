@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 
 from api.schemas import CreateOrderRequest
 from models.order import Order
-from services.order_repository import create_order, get_order, delete_order
+from services.order_repository import create_order, get_order, delete_order, update_order
 
 app = FastAPI()
 
@@ -59,3 +59,26 @@ def delete_order_endpoint(order_id: int):
     if deleted == 0:
         raise HTTPException(status_code=404, detail="Order not found")
 
+@app.put("/orders/{order_id}")
+def update_order_endpoint(
+    order_id: int,
+    order_data: CreateOrderRequest,
+):
+    updated = update_order(
+        order_id,
+        order_data.price,
+        order_data.hours,
+        order_data.commission_percent,
+        order_data.booster_id,
+    )
+
+    if updated == 0:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    return {
+        "id": order_id,
+        "price": order_data.price,
+        "hours": order_data.hours,
+        "commission_percent": order_data.commission_percent,
+        "booster_id": order_data.booster_id,
+    }
